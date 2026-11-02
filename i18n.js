@@ -1,4 +1,4 @@
-import { EXTRA } from "./lang_extra.js?v=202610271942";
+import { EXTRA } from "./lang_extra.js?v=202611020051";
 // 画面の言葉。日本語は「やさしい日本語」。ベトナム語は仮訳（教材担当の確認待ち）。
 const T = {
   appName:      { ja: "しごとの日本語れんしゅう", en: "Work Japanese Practice", vi: "Luyện tiếng Nhật công việc" },
@@ -116,6 +116,10 @@ const T = {
   examTitle:    { ja: "試験たいさく", en: "Test practice", vi: "Luyện thi" },
   examNote:     { ja: "形式に あわせて 作った 練習問題です（公式の 問題では ありません）", en: "Practice questions written in the official format (not official questions)", vi: "Câu hỏi luyện tập theo định dạng chính thức (không phải đề chính thức)" },
   settingsShort:{ ja: "せってい", en: "Settings", vi: "Cài đặt" },
+  newAppTitle:  { ja: "アプリを新しくしました", en: "We updated the app", vi: "Ứng dụng đã được cập nhật" },
+  newAppBody:   { ja: "新しくしたので、はじめに1回だけ設定が必要です。下のボタンを押してGoogleでログインすると、前の設定がそのまま戻ります（1分ほど）。", en: "Because of the update, you need to set it up once at the start. Tap the button below and sign in with Google — your previous settings come back (about 1 minute).", vi: "Vì đã cập nhật, bạn cần cài đặt 1 lần lúc đầu. Bấm nút bên dưới và đăng nhập Google — cài đặt cũ sẽ trở lại (khoảng 1 phút)." },
+  newAppBtn:    { ja: "Googleで設定する", en: "Set up with Google", vi: "Cài đặt bằng Google" },
+  newAppSkip:   { ja: "自分で入力する人・あとでする人はこちら", en: "Enter it yourself, or do it later", vi: "Tự nhập hoặc làm sau" },
   needSetupTitle:{ ja: "AIと 話す 練習は まだ つかえません", en: "AI conversation isn't available yet", vi: "Chưa dùng được luyện nói với AI" },
   needSetupBody:{ ja: "会社の 担当者が 準備を すると つかえるように なります。いまは 下の 練習が できます。", en: "It will work after your company contact sets it up. For now, you can do the practice below.", vi: "Sau khi người phụ trách của công ty cài đặt thì sẽ dùng được. Bây giờ bạn có thể luyện các bài bên dưới." },
   forStaff:     { ja: "担当者の かたへ", en: "For staff in charge", vi: "Dành cho người phụ trách" },

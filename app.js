@@ -1,20 +1,20 @@
-import { t, tja, tr, trEn, LANGS, getLang, setLang } from "./i18n.js?v=202610271942";
-import { SCENES } from "./scenes.js?v=202610271942";
-import { SITUATIONS } from "./situations.js?v=202610271942";
-import { SAFETY_RULES, mask } from "./safety.js?v=202610271942";
-import { startConversation, stopConversation, sendNote, liveSpeak, muteFor, LIVE_MODEL } from "./live.js?v=202610271942";
-import { makeFeedback, judgeRetry, judgeDrill, makeScaffold, judgeTodo, tts, TEXT_MODEL } from "./coach.js?v=202610271942";
-import { DRILLS, DRILL_INDUSTRIES } from "./drills.js?v=202610271942";
-import { MANNERS, MANNER_CATS } from "./manners.js?v=202610271942";
-import { EXAMS } from "./exams.js?v=202610271942";
-import { RUBY } from "./ruby.js?v=202610271942";
-import { speechOf, cleanSpeech } from "./yomi.js?v=202610271942";
-import { SPEAK } from "./speak.js?v=202610271942";
-import { VOICE } from "./voice.js?v=202610271942";
-import { VOCAB, VOCAB_MODES, vocabItem } from "./vocab.js?v=202610271942";
-import * as VM from "./vmaster.js?v=202610271942";
-import * as S from "./store.js?v=202610271942";
-import { autoSetup, preloadGis } from "./setup.js?v=202610271942";
+import { t, tja, tr, trEn, LANGS, getLang, setLang } from "./i18n.js?v=202611020051";
+import { SCENES } from "./scenes.js?v=202611020051";
+import { SITUATIONS } from "./situations.js?v=202611020051";
+import { SAFETY_RULES, mask } from "./safety.js?v=202611020051";
+import { startConversation, stopConversation, sendNote, liveSpeak, muteFor, LIVE_MODEL } from "./live.js?v=202611020051";
+import { makeFeedback, judgeRetry, judgeDrill, makeScaffold, judgeTodo, tts, TEXT_MODEL } from "./coach.js?v=202611020051";
+import { DRILLS, DRILL_INDUSTRIES } from "./drills.js?v=202611020051";
+import { MANNERS, MANNER_CATS } from "./manners.js?v=202611020051";
+import { EXAMS } from "./exams.js?v=202611020051";
+import { RUBY } from "./ruby.js?v=202611020051";
+import { speechOf, cleanSpeech } from "./yomi.js?v=202611020051";
+import { SPEAK } from "./speak.js?v=202611020051";
+import { VOICE } from "./voice.js?v=202611020051";
+import { VOCAB, VOCAB_MODES, vocabItem } from "./vocab.js?v=202611020051";
+import * as VM from "./vmaster.js?v=202611020051";
+import * as S from "./store.js?v=202611020051";
+import { autoSetup, preloadGis } from "./setup.js?v=202611020051";
 
 const CONSENT_VERSION = "trial-2026-10-v2";   // v2: 音声入力（ブラウザの音声認識）の送り先を説明に追加
 const MAX_SECONDS = 300;                       // 1場面は最長5分（原価を抑えるため）
@@ -198,8 +198,36 @@ const sayBtn = (text, reading = "") => `<button class="say" data-say="${esc(text
 const fmtAt = at => { const d = new Date(at); return `${S.localDate(d).slice(5)} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 
 // ───── 初回設定 ─────
+let skipNewApp = false;
 function renderSetup() {
   const p = S.getProfile() || {};
+  // まだAIの準備がない人：最初は帯とボタンだけ（ほかは「自分で入力する人・あとでする人はこちら」で開く）
+  if (!S.getKey() && !skipNewApp) {
+    show(`
+      <section class="card goal">
+        <h2 style="font-size:1.45em">${bi("newAppTitle")}</h2>
+        <p>${bi("newAppBody")}</p>
+        <button id="newGo" class="primary big">🔑 ${bi("newAppBtn")}</button>
+        <p id="newStatus" class="status"></p>
+      </section>
+      <button id="newSkip" class="sub">${bi("newAppSkip")}</button>`);
+    document.getElementById("newSkip").onclick = () => { skipNewApp = true; renderSetup(); };
+    document.getElementById("newGo").onclick = async () => {
+      preloadGis();   // iPhone でログイン画面を開けるよう、押した直後に読み込みを始める
+      const $s = document.getElementById("newStatus"), btn = document.getElementById("newGo");
+      btn.disabled = true;
+      try {
+        S.setKey(await autoSetup({ model: TEXT_MODEL, onStep: m => { $s.textContent = m; $s.classList.remove("err"); } }));
+        $s.textContent = "✅ " + t("keyReady");
+        setTimeout(() => S.getProfile()?.consent?.version === CONSENT_VERSION ? renderHome() : renderSetup(), 1000);
+      } catch (e) {
+        console.error(e);
+        $s.textContent = e.message; $s.classList.add("err");
+        btn.disabled = false;
+      }
+    };
+    return;
+  }
   show(`
     <h1>${bi("appName")}</h1>
     <section class="card">
@@ -1444,4 +1472,19 @@ function renderSettings() {
 }
 
 // ───── 起動 ─────
+// 前の場所（toshinnumata4520-lang.github.io）の「前の続きから始める」から来たときは、その端末に残っていた名前・記録・AIの準備を受け取る（2026-11 引っ越し）
+if (location.hash === "#hikitsugi") {
+  history.replaceState(null, "", location.pathname + location.search);
+  if (window.opener) {
+    addEventListener("message", e => {
+      if (e.origin !== "https://toshinnumata4520-lang.github.io" || e.source !== window.opener || e.data?.type !== "nk-data") return;
+      if (S.getProfile()) return;   // こちらで始めた記録があれば上書きしない
+      try {
+        for (const [k, v] of Object.entries(e.data.items || {})) if (k.startsWith("nk.") && typeof v === "string") localStorage.setItem(k, v);
+        location.reload();
+      } catch {}
+    });
+    window.opener.postMessage({ type: "nk-ready" }, "https://toshinnumata4520-lang.github.io");
+  }
+}
 if (S.getProfile()?.consent?.version === CONSENT_VERSION) renderHome(); else renderSetup();
